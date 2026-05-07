@@ -34,67 +34,155 @@ class AutoReceiveTransferMoney : SwitchHook(), IFinder {
             .get()
 
     override fun initOnce(): Boolean {
+
         onMsgInsertWithOnConflict.hookAfterIfEnable { param ->
+
             val contentValues = param.args[2] as ContentValues
-            if (!contentValues.toString().contains("mmsupport-bin/readtemplate?")) {
+
+            if (!contentValues.toString()
+                    .contains("mmsupport-bin/readtemplate?")
+            ) {
                 return@hookAfterIfEnable
             }
 
             val xml = contentValues.getAsString("content")
             val talker = contentValues.getAsString("talker")
 
-            val transcationId = extractTagContent(xml, "transcationid")!!
+            val transcationId = extractTagContent(
+                xml,
+                "transcationid"
+            )!!
                 .replace("<![CDATA[", "")
                 .replace("]]>", "")
 
-            val transferId = extractTagContent(xml, "transferid")!!
+            val transferId = extractTagContent(
+                xml,
+                "transferid"
+            )!!
                 .replace("<![CDATA[", "")
                 .replace("]]>", "")
 
-            val invalidTime = extractTagContent(xml, "invalidtime")!!
+            val invalidTime = extractTagContent(
+                xml,
+                "invalidtime"
+            )!!
                 .replace("<![CDATA[", "")
                 .replace("]]>", "")
 
-            if (talker == MMEnvManagerImpl().getWxId()) return@hookAfterIfEnable
+            if (talker == MMEnvManagerImpl().getWxId()) {
+                return@hookAfterIfEnable
+            }
 
-            val obj = TransferOperation.toMethod().declaringClass.resolve().firstConstructor {
-                parameterCount(12)
-            }.self.newInstance(
-                transcationId,
-                transferId,
-                0,
-                "confirm",
-                talker,
-                invalidTime.toInt(),
-                "",
-                null,
-                1,
-                null,
-                0,
-                talker
-            )
+            val obj = TransferOperation.toMethod()
+                .declaringClass
+                .resolve()
+                .firstConstructor {
+                    parameterCount(12)
+                }
+                .self
+                .newInstance(
+                    transcationId,
+                    transferId,
+                    0,
+                    "confirm",
+                    talker,
+                    invalidTime.toInt(),
+                    "",
+                    null,
+                    1,
+                    null,
+                    0,
+                    talker
+                )
 
-            val delay = MikoConfig.autoTransferDelay + (100..3000).random()
+            val delay =
+                MikoConfig.autoTransferDelay +
+                        (100..3000).random()
 
             handler.postDelayed({
+
                 try {
-                    invokeNetSceneQueue(obj)
+
+                    val queue = Reflex.findField(
+                        NetSceneQueue.toMethod().declaringClass
+                    )
+                        .setReturnType(
+                            NetSceneQueue.toMethod().declaringClass
+                        )
+                        .get()
+                        .get(null)
+
+                    val method =
+                        queue.javaClass.declaredMethods.firstOrNull {
+                            it.parameterTypes.size == 1
+                        }
+
+                    method?.isAccessible = true
+                    method?.invoke(queue, obj)
+
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
+
             }, delay.toLong())
         }
 
         return true
     }
 
-    private fun invokeNetSceneQueue(sceneObj: Any) {
-        val queueObj = Reflex.findField(
-            NetSceneQueue.toMethod().declaringClass
-        )
-            .setReturnType(NetSceneQueue.toMethod().declaringClass)
-            .get()
-            .get(null)
+    private val TransferOperation =
+        DexDesc("$simpleTAG.Method.TransferOperation")
+
+    private val NetSceneQueue =
+        DexDesc("$simpleTAG.Method.NetSceneQueue")
+
+    override fun dexFind(finder: DexKitBridge) {
+
+        TransferOperation.findDexMethod(finder) {
+
+            searchPackages(
+                "com.tencent.mm.plugin.remittance.model"
+            )
+
+            matcher {
+                usingStrings(
+                    "/cgi-bin/mmpay-bin/transferoperation"
+                )
+            }
+        }
+
+        NetSceneQueue.findDexMethod(finder) {
+
+            searchPackages("com.tencent.mm.modelbase")
+
+            matcher {
+                usingStrings(
+                    "MicroMsg.NetSceneQueue",
+                    "doScene failed",
+                    "reset::cancel scene",
+                    "clearRunningQueue"
+                )
+            }
+        }
+    }
+
+    fun extractTagContent(
+        xml: String,
+        tagName: String
+    ): String? {
+
+        val regex =
+            "<$tagName>(.*?)</$tagName>"
+                .toRegex(
+                    RegexOption.DOT_MATCHES_ALL
+                )
+
+        return regex.find(xml)
+            ?.groups
+            ?.get(1)
+            ?.value
+    }
+}            .get(null)
 
         val method = queueObj.javaClass.declaredMethods.firstOrNull { m ->
             m.parameterCount == 1 &&
