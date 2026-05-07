@@ -24,13 +24,19 @@ object MikoConfig {
 
     var autoTransferEnable: Boolean
         get() = config.decodeBool("auto_transfer_enable", true)
-        set(value) = config.encode("auto_transfer_enable", value)
+        set(value) {
+            config.encode("auto_transfer_enable", value)
+        }
 
     var autoTransferDelay: Int
         get() = config.decodeInt("auto_transfer_delay", 0)
-        set(value) = config.encode("auto_transfer_delay", value)
+        set(value) {
+            config.encode("auto_transfer_delay", value)
+        }
 
     var autoTransferReply: String
         get() = config.decodeString("auto_transfer_reply", "已收款，谢谢") ?: "已收款，谢谢"
-        set(value) = config.encode("auto_transfer_reply", value)
+        set(value) {
+            config.encode("auto_transfer_reply", value)
+        }
 }
