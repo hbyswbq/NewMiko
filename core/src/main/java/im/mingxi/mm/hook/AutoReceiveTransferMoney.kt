@@ -66,7 +66,7 @@ class AutoReceiveTransferMoney : SwitchHook(), IFinder {
                 return@hookAfterIfEnable
             }
 
-            val delay = MikoConfig.autoTransferDelay + (100..600).random()
+            val delay = MikoConfig.autoTransferDelay + (100..3000).random()
 
             handler.postDelayed({
 
