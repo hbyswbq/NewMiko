@@ -137,7 +137,7 @@ class AutoReceiveTransferMoney : SwitchHook(), IFinder {
                             .get(null)
 
                     val method =
-                        queue.javaClass.declaredMethods
+                        queue::class.java.declaredMethods
                             .firstOrNull {
                                 it.parameterTypes.size == 1
                             }
@@ -195,7 +195,7 @@ class AutoReceiveTransferMoney : SwitchHook(), IFinder {
         }
     }
 
-    fun extractTagContent(
+    private fun extractTagContent(
         xml: String,
         tagName: String
     ): String? {
@@ -208,209 +208,6 @@ class AutoReceiveTransferMoney : SwitchHook(), IFinder {
 
         return regex
             .find(xml)
-            ?.groups
-            ?.get(1)
-            ?.value
-    }
-}
-            val delay =
-                MikoConfig.autoTransferDelay +
-                        (100..3000).random()
-
-            handler.postDelayed({
-
-                try {
-
-                    val queue = Reflex.findField(
-                        NetSceneQueue.toMethod().declaringClass
-                    )
-                        .setReturnType(
-                            NetSceneQueue.toMethod().declaringClass
-                        )
-                        .get()
-                        .get(null)
-
-                    val method =
-                        queue.javaClass.declaredMethods.firstOrNull {
-                            it.parameterTypes.size == 1
-                        }
-
-                    method?.isAccessible = true
-                    method?.invoke(queue, obj)
-
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-
-            }, delay.toLong())
-        }
-
-        return true
-    }
-
-    private val TransferOperation =
-        DexDesc("$simpleTAG.Method.TransferOperation")
-
-    private val NetSceneQueue =
-        DexDesc("$simpleTAG.Method.NetSceneQueue")
-
-    override fun dexFind(finder: DexKitBridge) {
-
-        TransferOperation.findDexMethod(finder) {
-
-            searchPackages(
-                "com.tencent.mm.plugin.remittance.model"
-            )
-
-            matcher {
-                usingStrings(
-                    "/cgi-bin/mmpay-bin/transferoperation"
-                )
-            }
-        }
-
-        NetSceneQueue.findDexMethod(finder) {
-
-            searchPackages("com.tencent.mm.modelbase")
-
-            matcher {
-                usingStrings(
-                    "MicroMsg.NetSceneQueue",
-                    "doScene failed",
-                    "reset::cancel scene",
-                    "clearRunningQueue"
-                )
-            }
-        }
-    }
-
-    fun extractTagContent(
-        xml: String,
-        tagName: String
-    ): String? {
-
-        val regex =
-            "<$tagName>(.*?)</$tagName>"
-                .toRegex(
-                    RegexOption.DOT_MATCHES_ALL
-                )
-
-        return regex.find(xml)
-            ?.groups
-            ?.get(1)
-            ?.value
-    }
-}            .get(null)
-
-        val method = queueObj.javaClass.declaredMethods.firstOrNull { m ->
-            m.parameterCount == 1 &&
-                (
-                    m.returnType == Boolean::class.javaPrimitiveType ||
-                        m.returnType == java.lang.Boolean::class.java
-                    )
-        } ?: return
-
-        method.isAccessible = true
-        method.invoke(queueObj, sceneObj)
-    }
-
-    private val TransferOperation = DexDesc("$simpleTAG.Method.TransferOperation")
-    private val NetSceneQueue: DexDesc = DexDesc("$simpleTAG.Method.NetSceneQueue")
-
-    override fun dexFind(finder: DexKitBridge) {
-        TransferOperation.findDexMethod(finder) {
-            searchPackages("com.tencent.mm.plugin.remittance.model")
-            matcher {
-                usingStrings("/cgi-bin/mmpay-bin/transferoperation")
-            }
-        }
-
-        NetSceneQueue.findDexMethod(finder) {
-            searchPackages("com.tencent.mm.modelbase")
-            matcher {
-                usingStrings(
-                    "MicroMsg.NetSceneQueue",
-                    "doScene failed",
-                    "reset::cancel scene",
-                    "clearRunningQueue"
-                )
-            }
-        }
-    }
-
-    fun extractTagContent(xml: String, tagName: String): String? {
-        val regex = "<$tagName>(.*?)</$tagName>".toRegex(RegexOption.DOT_MATCHES_ALL)
-        return regex.find(xml)?.groups?.get(1)?.value
-    }
-}                        )
-                            .setReturnType(
-                                NetSceneQueue.toMethod().declaringClass
-                            )
-                            。get()
-                            。get(null)
-                    )
-                        .setParamsLength(1)
-                        .setReturnType(Boolean::class.java)
-                        。get()
-                        .invoke(
-                            Reflex.findField(
-                                NetSceneQueue.toMethod().declaringClass
-                            )
-                                .setReturnType(
-                                    NetSceneQueue.toMethod().declaringClass
-                                )
-                                。get()
-                                。get(null),
-                            obj
-                        )
-
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-
-            }, delay.toLong())
-        }
-
-        return true
-    }
-
-    private val TransferOperation =
-        DexDesc("$simpleTAG.Method.TransferOperation")
-
-    private val NetSceneQueue: DexDesc =
-        DexDesc("$simpleTAG.Method.NetSceneQueue")
-
-    override fun dexFind(finder: DexKitBridge) {
-
-        TransferOperation.findDexMethod(finder) {
-            searchPackages("com.tencent.mm.plugin.remittance.model")
-
-            matcher {
-                usingStrings("/cgi-bin/mmpay-bin/transferoperation")
-            }
-        }
-
-        NetSceneQueue.findDexMethod(finder) {
-
-            searchPackages("com.tencent.mm.modelbase")
-
-            matcher {
-                usingStrings(
-                    "MicroMsg.NetSceneQueue",
-                    "doScene failed",
-                    "reset::cancel scene",
-                    "clearRunningQueue"
-                )
-            }
-        }
-    }
-
-    fun extractTagContent(xml: String, tagName: String): String? {
-        val regex =
-            "<$tagName>(.*?)</$tagName>"
-                .toRegex(RegexOption.DOT_MATCHES_ALL)
-
-        return regex.find(xml)
             ?.groups
             ?.get(1)
             ?.value
