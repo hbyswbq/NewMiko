@@ -137,10 +137,15 @@ class AutoReceiveTransferMoney : SwitchHook(), IFinder {
                             .get(null)
 
                     val method =
-                        queue::class.java.declaredMethods
-                            .firstOrNull {
-                                it.parameterTypes.size == 1
-                            }
+    queue::class.java.declaredMethods
+        .firstOrNull {
+
+            it.parameterTypes.size == 1 &&
+            (
+                it.returnType == Boolean::class.java ||
+                it.returnType == Boolean::class.javaPrimitiveType
+            )
+        }
 
                     method?.isAccessible = true
                     method?.invoke(queue, obj)
